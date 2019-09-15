@@ -130,7 +130,7 @@ memoryCache.Set(client_id, reCaptchavStatus, new MemoryCacheEntryOptions
 - В случае удачной проверки токена во временном кеше сохраняется результат этой проверки. По умолчанию результат сохраняется на 2 минуты в MemoryCache. Срок хранения можно изменить через `reCaptcha3VerifyController.CacheSuccessVerifyResultLifetimeMinutes`
 - В любом методе контроллера можно попытаться получить значение проверки токена.
 
-Пример использования:
+Пример использования прямого чтения из кеша:
 ```c#
 public ActionResult Login()
 {
