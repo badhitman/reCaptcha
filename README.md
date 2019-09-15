@@ -1,5 +1,5 @@
 # reCaptcha
-reCaptcha asp.net core
+reCaptcha // c# asp.net core 2.2
 
 Решение для внедрения на свой сайт reCaptcha
 
