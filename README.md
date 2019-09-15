@@ -165,7 +165,24 @@ public IActionResult Register()
 Объект оценки токена будет автоматически удалён из кеша после отработки метода.
 
 ## v2
-Общие условия. Для удачной привязки токена к модели - потребуется свойство:
+Простейший пример клиентской интеграции:
+```html
+<html>
+	<head>
+		<title>reCAPTCHA demo: Simple page</title>
+		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+	</head>
+	<body>
+		<form action="?" method="POST">
+			<div class="g-recaptcha" data-sitekey="your_site_key"></div>
+			<br/>
+			<input type="submit" value="Submit">
+		</form>
+	</body>
+</html>
+```
+
+Для удачной привязки токена к модели - потребуется свойство:
 
 ```c#
 public string g_recaptcha_response { get; set; }
@@ -224,22 +241,6 @@ public async Task<IActionResult> Login(LoginModel model)
 ```
 
 ## v2 Checkbox widget
-Простейший пример интеграции:
-```html
-<html>
-	<head>
-		<title>reCAPTCHA demo: Simple page</title>
-		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-	</head>
-	<body>
-		<form action="?" method="POST">
-			<div class="g-recaptcha" data-sitekey="your_site_key"></div>
-			<br/>
-			<input type="submit" value="Submit">
-		</form>
-	</body>
-</html>
-```
 Эта версия предполагает, что вы явно вставите тег **DIV** внутри формы в нужном месте. Благодаря такой вставки к нашей форме при отправке будет добавлено дополнительное поле с именем g-recaptcha-response.
 Тут важно обратить внимание что имя поля имеет символы дефиса. Просто так привязать такое поле к модели не получится из за того что именам полей самой модели нельзя иметь дефисы.
 Для того что бы поле g-recaptcha-response автоматически переименовывались в g_recaptcha_response на этапе привязки модели нужно добавить в ваш проект соответсвующий провайдер привязчика
