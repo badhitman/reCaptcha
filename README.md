@@ -151,9 +151,8 @@ public ActionResult Login()
   return View();
 }
 ```
-
-Кроме того тут же можно ознакомится с примером реализации IActionFilter reCaptcha3StateFilter. Применение этого этого фильтра сам ведёт контроль жизненного цикла токенов.
-Доступ к объекту оценки токена упрощён до `reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);`
+Гораздо удобнее применить IActionFilter reCaptcha3StateFilter к методу и легко извлекать значение без необходимости контроля жизненного цикла данных.
+Упрощённый доступ к оценке:
 ```c#
 [ServiceFilter(typeof(reCaptcha3StateFilter))]
 public IActionResult Register()
