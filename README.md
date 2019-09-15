@@ -180,7 +180,7 @@ public class LoginModel
 reCaptcha2ResponseModel my_verifier = reCaptcha.stat.reCaptchaVerifier.reCaptcha2SiteVerify("ваш_приватный_ключ", g_recaptcha_response, "user_ip")
 ```
 
-Пример использования в методе контроллера:
+Пример использования reCaptcha (обе версии: v2 и v3) в методе контроллера:
 ```c#
 [HttpPost]
 [ValidateAntiForgeryToken]
