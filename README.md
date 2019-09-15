@@ -90,7 +90,22 @@ public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
 ```
 Этого уже достаточно. reCaptcha v3 на этом этапе полностью функционирует.
 Теперь посещения страниц с подключёнными скриптами будет оцениваться сервером ReCaptcha по своей шкале.
-Можно через HttpContext читать эту оценку из кеша либо применить фильтр дейтсвий, который сам извлечёт для нам результат проверки токена.
+Можно пытаться читать эту оценку из кеша либо применить фильтр дейтсвий, который сам извлечёт для нам результат проверки токена.
+
+что бы получить имя хранимой оценки нам нужно получить стабильный идентификатор сессии. в данном случае этот идентификатор хранится в дополнительном параметре сессии вот таким способом:
+```c#
+string client_id = HttpContext.Session.Get<string>("ClientId");
+if (string.IsNullOrWhiteSpace(client_id))
+{
+	client_id = Guid.NewGuid().ToString();
+	HttpContext.Session.Set<string>("ClientId", client_id);
+}
+
+memoryCache.Set(client_id, reCaptchavStatus, new MemoryCacheEntryOptions
+{
+	AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheSuccessVerifyResultLifetimeMinutes)
+});
+```
 
 В общем и целом серверную часть можно описать так:
 
