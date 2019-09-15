@@ -110,7 +110,9 @@ public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
 Что бы получить имя хранимой оценки нам нужно получить стабильный идентификатор сессии.
 В данном случае этот идентификатор хранится в дополнительном параметре сессии **"ClientId"**.
 Что бы понять как формируется и хранится этот идентификатор можно заглянуть в код контроллера **reCaptcha3VerifyController**:
+
 https://github.com/badhitman/reCaptcha/blob/49ee11bb6cfb3cd1d79e512d4426dc12006a4695/Controllers/reCaptcha3VerifyController.cs#L65
+
 Из этого кода понятно как и куда записывается результат проверки токена.
 
 В общем и целом серверную часть можно описать так:
