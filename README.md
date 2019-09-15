@@ -21,6 +21,58 @@ reCaptcha // c# asp.net core 2.2
 
 Оценка между 0 и 1 означает, что reCaptcha не уверен с кем имеет дело и судя по значению можно понять к чему reCaptcha больше склоняется.
 
+Внедрение:
+Клиентскя/web часть интегрируется добавлением небольшим количеством скриптов. Можно внедрить в мастер страницу в самый конец _Layout.cshtml либо внедрив только на некоторые страницы
+```html
+<script src="https://www.google.com/recaptcha/api.js?render=reCaptchaV3PublicKey"></script>
+<script>
+	grecaptcha.ready(function()
+	{
+		var action = '@this.ViewContext.RouteData.Values["controller"]';
+		grecaptcha.execute('reCaptchaV3PublicKey', {action: action}).then(function(token)
+		{
+			var data = new FormData();
+			data.append("action", action);
+			data.append("token", token);
+
+			fetch('/reCaptcha3Verify', { method: 'POST', body: data }).then(function (response)
+			{
+				response.json().then(function (data)
+				{
+					// на клиенте можно как то отреагировать на оценку
+                    if (!data || data.score < 0.9) {
+                        //document.getElementById('re-captcha-form').style.display = 'block';
+                    }
+				});
+			});
+		});
+	});
+</script>
+```
+Разберём этот код:
+
+- всё что внутри `grecaptcha.execute('reCaptchaV3PublicKey', {action: action}).then(function(token){...});` лучше разместить в отдельной функции в стороннем .js файле
+- в этом коде `fetch('/reCaptcha3Verify', { method: 'POST', body: data })...` используется имя контроллера для проверки reCaptcha v3. Если его имя в вашем случае другое, то отразите нужное имя
+- v3 подразумевает, что при каждом запросе оценки пользователя нужно ещё сообщить какая область сайта проверяется. reCaptcha настоятельно рекомендует сверять этот параметр в ответах сервера. Я использую универсальный подход `var action = '@this.ViewContext.RouteData.Values["controller"]';`
+- `reCaptchaV3PublicKey` это ваш публичный ключ reCaptcha
+
+```c#
+public static class SessionExtensions
+{
+	public static void Set<T>(this ISession session, string key, T value)
+	{
+		session.SetString(key, JsonConvert.SerializeObject(value));
+	}
+
+	public static T Get<T>(this ISession session, string key)
+	{
+		var value = session.GetString(key);
+
+		return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
+	}
+}
+```
+
 ## v2 Checkbox widget
 Эта версия предполагает, что вы явно вставите тег **DIV** внутри формы в нужном месте. Благодаря такой вставки к нашей форме при отправке будет добавлено дополнительное поле с именем g-recaptcha-response.
 Тут важно обратить внимание что имя поля имеет символы дефиса. Просто так привязать такое поле к модели не получится из за того что именам полей самой модели нельзя иметь дефисы.
