@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿////////////////////////////////////////////////
+// © https://github.com/badhitman - @fakegov 
+////////////////////////////////////////////////
+using Newtonsoft.Json;
 using reCaptcha.Models.VerifyingUsersResponse;
 using System;
 using System.Collections.Specialized;

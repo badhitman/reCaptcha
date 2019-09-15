@@ -147,18 +147,63 @@ public IActionResult Register()
 Объект оценки токена будет автоматически удалён из кеша после отработки метода.
 
 ## v2
-Общие условия. В для удачной привязки токена к модели - потребуется свойство:
+Общие условия. Для удачной привязки токена к модели - потребуется свойство:
 
 ```c#
 public string g_recaptcha_response { get; set; }
 ```
-Наш привязчик свяжет поле web формы g-recaptcha-response с нашей моделью.
+Наш привязчик свяжет поле web формы g-recaptcha-response с вашей моделью.
+
+Пример подходящей модели:
+```c#
+public class LoginModel
+{
+	[Required(ErrorMessage = "Не указан Login")]
+	public string Username { get; set; }
+
+	[Display(Name = "Пароль")]
+	[Required(ErrorMessage = "Не указан пароль")]
+	[DataType(DataType.Password)]
+	public string Password { get; set; }
+
+	public string g_recaptcha_response { get; set; }
+}
+```
+В это же время у нас к форме привязан DIV тег reCaptcha. Скрип reCaptcha сам добавит к форме служебное поле g-recaptcha-response, которые наш привязчик модели привяжит к свойству `public string g_recaptcha_response { get; set; }`
+
 
 Этот токен можно проверить так:
 ```C#
 reCaptcha2ResponseModel my_verifier = reCaptcha.stat.reCaptchaVerifier.reCaptcha2SiteVerify("ваш_приватный_ключ", g_recaptcha_response, "user_ip")
 ```
 
+Пример использования в методе контроллера:
+```c#
+[HttpPost]
+[ValidateAntiForgeryToken]
+// вызов метода с таким фильтром гарантируют гашение сущетсвующего токена (если он вообще есть в кеше)
+[ServiceFilter(typeof(reCaptcha3StateFilter))]
+public async Task<IActionResult> Login(LoginModel model)
+{
+	if (ModelState.IsValid)
+	{
+		if (options.Value.IsEnableReCaptchaV3())
+		{
+			// токены v3 хранятся во временном кеше. Если в кеше найдётся неиспользуемый токен, то мы его получим и погасим
+			reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
+		}
+		
+		if (options.Value.IsEnableReCaptchaV2())
+		{
+			// токены v2 проверяются сразу во время запроса и ни где не хранятся
+			reCaptcha2ResponseModel reCaptcha2Status = reCaptchaVerifier.reCaptcha2SiteVerify(options.Value.reCaptchaV2PrivatKey, model.g_recaptcha_response, HttpContext.Connection.RemoteIpAddress.ToString());
+
+			
+		}
+	}
+	return View(model);
+}
+```
 
 ## v2 Checkbox widget
 Эта версия предполагает, что вы явно вставите тег **DIV** внутри формы в нужном месте. Благодаря такой вставки к нашей форме при отправке будет добавлено дополнительное поле с именем g-recaptcha-response.

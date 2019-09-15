@@ -1,6 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿////////////////////////////////////////////////
+// © https://github.com/badhitman - @fakegov 
+////////////////////////////////////////////////
+using System.ComponentModel.DataAnnotations;
 
-namespace reCaptcha
+namespace reCaptcha.Models
 {
     public class reCaptchaVerifyRequestModel
     {

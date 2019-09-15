@@ -1,4 +1,7 @@
-﻿using System;
+﻿////////////////////////////////////////////////
+// © https://github.com/badhitman - @fakegov 
+////////////////////////////////////////////////
+using System;
 
 namespace reCaptcha.Models.VerifyingUsersResponse
 {

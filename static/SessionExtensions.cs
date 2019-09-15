@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿////////////////////////////////////////////////
+// © https://github.com/badhitman - @fakegov 
+////////////////////////////////////////////////
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace reCaptcha
+namespace reCaptcha.stat
 {
     public static class SessionExtensions
     {
