@@ -146,6 +146,19 @@ public IActionResult Register()
 ```
 Объект оценки токена будет автоматически удалён из кеша после отработки метода.
 
+## v2
+Общие условия. В для удачной привязки токена к модели - потребуется свойство:
+
+```c#
+public string g_recaptcha_response { get; set; }
+```
+Наш привязчик свяжет поле web формы g-recaptcha-response с нашей моделью.
+
+Этот токен можно проверить так:
+```C#
+reCaptcha2ResponseModel my_verifier = reCaptcha.stat.reCaptchaVerifier.reCaptcha2SiteVerify("ваш_приватный_ключ", g_recaptcha_response, "user_ip")
+```
+
 
 ## v2 Checkbox widget
 Эта версия предполагает, что вы явно вставите тег **DIV** внутри формы в нужном месте. Благодаря такой вставки к нашей форме при отправке будет добавлено дополнительное поле с именем g-recaptcha-response.
