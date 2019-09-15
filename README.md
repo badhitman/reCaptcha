@@ -6,7 +6,7 @@ reCaptcha // c# asp.net core 2.2
 Версий reCaptcha на текущий момент две (**v2** и **v3**), но **v2** имеет три под-версии.
 - [v3](https://developers.google.com/recaptcha/docs/v3) - даёт оценку для каждого посещения пользователем страниц вашего сайта без какого либо взаимодействия с самим пользователем
 - v2 - задачки с выбором картинок и прочие проверочные "тесты зрения и нервов пользователя"
-    - ["стандартный"](https://developers.google.com/recaptcha/docs/display) для расположение в явном виде привычного "чекбокса" в вашей форме. Например, для "дополнительной защиты" форм авторизации или регистрации
+	- ["стандартный"](https://developers.google.com/recaptcha/docs/display) для расположение в явном виде привычного "чекбокса" в вашей форме. Например, для "дополнительной защиты" форм авторизации или регистрации
 	- ["скрытый"](https://developers.google.com/recaptcha/docs/invisible), когда reCaptcha сама решает запрашивать/показывать задачки или нет
 	- [android](https://developer.android.com/training/safetynet/recaptcha.html), который вы можете использовать для защиты своего приложения от вредоносного трафика.
 	
@@ -26,27 +26,27 @@ reCaptcha // c# asp.net core 2.2
 ```html
 <script src="https://www.google.com/recaptcha/api.js?render=reCaptchaV3PublicKey"></script>
 <script>
-	grecaptcha.ready(function()
-	{
-		var action = '@this.ViewContext.RouteData.Values["controller"]';
-		grecaptcha.execute('reCaptchaV3PublicKey', {action: action}).then(function(token)
-		{
-			var data = new FormData();
-			data.append("action", action);
-			data.append("token", token);
+  grecaptcha.ready(function()
+  {
+    var action = '@this.ViewContext.RouteData.Values["controller"]';
+    grecaptcha.execute('reCaptchaV3PublicKey', {action: action}).then(function(token)
+    {
+      var data = new FormData();
+      data.append("action", action);
+      data.append("token", token);
 
-			fetch('/reCaptcha3Verify', { method: 'POST', body: data }).then(function (response)
-			{
-				response.json().then(function (data)
-				{
-					// на клиенте можно как то отреагировать на оценку
-                    if (!data || data.score < 0.9) {
-                        //document.getElementById('re-captcha-form').style.display = 'block';
-                    }
-				});
-			});
-		});
-	});
+      fetch('/reCaptcha3Verify', { method: 'POST', body: data }).then(function (response)
+      {
+        response.json().then(function (data)
+        {
+          // на клиенте можно как то отреагировать на оценку
+          if (!data || data.score < 0.9) {
+          //document.getElementById('re-captcha-form').style.display = 'block';
+          }
+        });
+      });
+    });
+  });
 </script>
 ```
 Разберём этот код:
@@ -62,17 +62,16 @@ reCaptcha // c# asp.net core 2.2
 ```c#
 public static class SessionExtensions
 {
-	public static void Set<T>(this ISession session, string key, T value)
-	{
-		session.SetString(key, JsonConvert.SerializeObject(value));
-	}
+  public static void Set<T>(this ISession session, string key, T value)
+  {
+    session.SetString(key, JsonConvert.SerializeObject(value));
+  }
 
-	public static T Get<T>(this ISession session, string key)
-	{
-		var value = session.GetString(key);
-
-		return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
-	}
+  public static T Get<T>(this ISession session, string key)
+  {
+    var value = session.GetString(key);
+    return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
+  }
 }
 ```
 
@@ -81,11 +80,11 @@ public static class SessionExtensions
 ```c#
 public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
 {
-	public override string reCaptchaV3PrivatKey { get; }
-	blic ReCaptcha3VerifyController(IOptions<AppConfig> _options)
-	{
-		reCaptchaV3PrivatKey = _options.Value.reCaptchaV3PrivatKey;
-	}
+  public override string reCaptchaV3PrivatKey { get; }
+  blic ReCaptcha3VerifyController(IOptions<AppConfig> _options)
+  {
+    reCaptchaV3PrivatKey = _options.Value.reCaptchaV3PrivatKey;
+  }
 }
 ```
 Этого уже достаточно. reCaptcha v3 на этом этапе полностью функционирует.
@@ -97,13 +96,13 @@ public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
 string client_id = HttpContext.Session.Get<string>("ClientId");
 if (string.IsNullOrWhiteSpace(client_id))
 {
-	client_id = Guid.NewGuid().ToString();
-	HttpContext.Session.Set<string>("ClientId", client_id);
+  client_id = Guid.NewGuid().ToString();
+  HttpContext.Session.Set<string>("ClientId", client_id);
 }
 
 memoryCache.Set(client_id, reCaptchavStatus, new MemoryCacheEntryOptions
 {
-	AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheSuccessVerifyResultLifetimeMinutes)
+  AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(CacheSuccessVerifyResultLifetimeMinutes)
 });
 ```
 
@@ -118,21 +117,21 @@ memoryCache.Set(client_id, reCaptchavStatus, new MemoryCacheEntryOptions
 ```c#
 public ActionResult Login()
 {
-	string client_id = HttpContext.Session.Get<string>("ClientId");
-	if (!string.IsNullOrWhiteSpace(client_id))
-	{
-		byte[] reCaptchaBody;
-		if (cache.TryGetValue(client_id, out reCaptchaBody))
-		{
-			if (reCaptchaBody is null || reCaptchaBody.Length == 0)
-			{
-				// можно десереализовать и ознакомиться с оценкой текущего пользователя
-			}
-			// исключаем повторное использование одноразового/временного токена
-            cache.Remove(client_id);
-		}
-	}
-	return View();
+  string client_id = HttpContext.Session.Get<string>("ClientId");
+  if (!string.IsNullOrWhiteSpace(client_id))
+  {
+    byte[] reCaptchaBody;
+    if (cache.TryGetValue(client_id, out reCaptchaBody))
+    {
+      if (reCaptchaBody is null || reCaptchaBody.Length == 0)
+      {
+        // можно десереализовать и ознакомиться с оценкой текущего пользователя
+      }
+      // исключаем повторное использование одноразового/временного токена
+      cache.Remove(client_id);
+    }
+  }
+  return View();
 }
 ```
 
@@ -147,8 +146,8 @@ services.AddMemoryCache();
 ```c#
 services.AddSession(options =>
 {
-	options.Cookie.Name = ".MyApp.Session";
-	options.IdleTimeout = TimeSpan.FromMinutes(60);
+  options.Cookie.Name = ".MyApp.Session";
+  options.IdleTimeout = TimeSpan.FromMinutes(60);
 });
 ```
 
@@ -158,8 +157,8 @@ services.AddSession(options =>
 [ServiceFilter(typeof(reCaptcha3StateFilter))]
 public IActionResult Register()
 {
-	reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
-	return View();
+  reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
+  return View();
 }
 ```
 Объект оценки токена будет автоматически удалён из кеша после отработки метода.
@@ -168,17 +167,17 @@ public IActionResult Register()
 Простейший пример клиентской интеграции:
 ```html
 <html>
-	<head>
-		<title>reCAPTCHA demo: Simple page</title>
-		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-	</head>
-	<body>
-		<form action="?" method="POST">
-			<div class="g-recaptcha" data-sitekey="your_site_key"></div>
-			<br/>
-			<input type="submit" value="Submit">
-		</form>
-	</body>
+  <head>
+    <title>reCAPTCHA demo: Simple page</title>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  </head>
+  <body>
+    <form action="?" method="POST">
+      <div class="g-recaptcha" data-sitekey="your_site_key"></div>
+      <br/>
+      <input type="submit" value="Submit">
+    </form>
+  </body>
 </html>
 ```
 
@@ -193,15 +192,15 @@ public string g_recaptcha_response { get; set; }
 ```c#
 public class LoginModel
 {
-	[Required(ErrorMessage = "Не указан Login")]
-	public string Username { get; set; }
+  [Required(ErrorMessage = "Не указан Login")]
+  public string Username { get; set; }
 
-	[Display(Name = "Пароль")]
-	[Required(ErrorMessage = "Не указан пароль")]
-	[DataType(DataType.Password)]
-	public string Password { get; set; }
+  [Display(Name = "Пароль")]
+  [Required(ErrorMessage = "Не указан пароль")]
+  [DataType(DataType.Password)]
+  public string Password { get; set; }
 
-	public string g_recaptcha_response { get; set; }
+  public string g_recaptcha_response { get; set; }
 }
 ```
 В это же время у нас к форме привязан DIV тег reCaptcha. Скрип reCaptcha сам добавит к форме служебное поле g-recaptcha-response, которые наш привязчик модели привяжит к свойству `public string g_recaptcha_response { get; set; }`
@@ -220,23 +219,23 @@ reCaptcha2ResponseModel my_verifier = reCaptcha.stat.reCaptchaVerifier.reCaptcha
 [ServiceFilter(typeof(reCaptcha3StateFilter))]
 public async Task<IActionResult> Login(LoginModel model)
 {
-	if (ModelState.IsValid)
-	{
-		if (options.Value.IsEnableReCaptchaV3())
-		{
-			// токены v3 хранятся во временном кеше. Если в кеше найдётся неиспользуемый токен, то мы его получим и погасим
-			reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
-		}
-		
-		if (options.Value.IsEnableReCaptchaV2())
-		{
-			// токены v2 проверяются сразу во время запроса и ни где не хранятся
-			reCaptcha2ResponseModel reCaptcha2Status = reCaptchaVerifier.reCaptcha2SiteVerify(options.Value.reCaptchaV2PrivatKey, model.g_recaptcha_response, HttpContext.Connection.RemoteIpAddress.ToString());
+  if (ModelState.IsValid)
+  {
+    if (options.Value.IsEnableReCaptchaV3())
+    {
+      // токены v3 хранятся во временном кеше. Если в кеше найдётся неиспользуемый токен, то мы его получим и погасим
+      reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
+    }
+    
+    if (options.Value.IsEnableReCaptchaV2())
+    {
+      // токены v2 проверяются сразу во время запроса и ни где не хранятся
+      reCaptcha2ResponseModel reCaptcha2Status = reCaptchaVerifier.reCaptcha2SiteVerify(options.Value.reCaptchaV2PrivatKey, model.g_recaptcha_response, HttpContext.Connection.RemoteIpAddress.ToString());
 
-			
-		}
-	}
-	return View(model);
+      
+    }
+  }
+  return View(model);
 }
 ```
 
@@ -247,7 +246,7 @@ public async Task<IActionResult> Login(LoginModel model)
 ```C#
 services.AddMvc(opts =>
 {
-	opts.ModelBinderProviders.Insert(0, new CustomReCaptcha2ResponseBinderProvider());
+  opts.ModelBinderProviders.Insert(0, new CustomReCaptcha2ResponseBinderProvider());
 });
 ```
 Соответсвующий провайдер и привязчик к нему есть в проекте. Достаточно его только подключить в вашем проекте.
