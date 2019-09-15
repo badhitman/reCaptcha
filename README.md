@@ -75,13 +75,13 @@ public static class SessionExtensions
 }
 ```
 
-В реализации используются MemoryCache
+нам потребуется MemoryCache
 ```c#
 services.AddDistributedMemoryCache();
 services.AddMemoryCache();
 ```
 
-В реализации используются сессии
+к тому же используются сессии
 ```c#
 services.AddSession(options =>
 {
