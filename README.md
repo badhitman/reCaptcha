@@ -75,6 +75,21 @@ public static class SessionExtensions
 }
 ```
 
+В реализации используются MemoryCache
+```c#
+services.AddDistributedMemoryCache();
+services.AddMemoryCache();
+```
+
+В реализации используются сессии
+```c#
+services.AddSession(options =>
+{
+  options.Cookie.Name = ".MyApp.Session";
+  options.IdleTimeout = TimeSpan.FromMinutes(60);
+});
+```
+
 Ещё потребуется унаследовать и реализовать абстрактный класс `reCaptcha3VerifyController`. Вам потребуется как-то обеспечить назначение приватного ключа.
 Пример простейшей реализации:
 ```c#
@@ -133,22 +148,6 @@ public ActionResult Login()
   }
   return View();
 }
-```
-
-
-В реализации используются MemoryCache
-```c#
-services.AddDistributedMemoryCache();
-services.AddMemoryCache();
-```
-
-В реализации используются сессии
-```c#
-services.AddSession(options =>
-{
-  options.Cookie.Name = ".MyApp.Session";
-  options.IdleTimeout = TimeSpan.FromMinutes(60);
-});
 ```
 
 Кроме того тут же можно ознакомится с примером реализации IActionFilter reCaptcha3StateFilter. Применение этого этого фильтра сам ведёт контроль жизненного цикла токенов.
