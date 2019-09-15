@@ -76,6 +76,19 @@ public static class SessionExtensions
 }
 ```
 
+Ещё потребуется унаследовать и реализовать абстрактный класс `reCaptcha3VerifyController`. Вам потребуется как-то обеспечить назначение приватного ключа.
+Пример простейшей реализации:
+```c#
+public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
+{
+	public override string reCaptchaV3PrivatKey { get; }
+	blic ReCaptcha3VerifyController(IOptions<AppConfig> _options)
+	{
+		reCaptchaV3PrivatKey = _options.Value.reCaptchaV3PrivatKey;
+	}
+}
+```
+
 В общем и целом серверную часть можно описать так:
 
 - Контроллер получает и обработывает токены от клиента
