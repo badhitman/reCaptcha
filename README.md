@@ -52,10 +52,13 @@ reCaptcha // c# asp.net core 2.2
 Разберём этот код:
 
 - всё что внутри `grecaptcha.execute('reCaptchaV3PublicKey', {action: action}).then(function(token){...});` лучше разместить в отдельной функции в стороннем .js файле
-- в этом коде `fetch('/reCaptcha3Verify', { method: 'POST', body: data })...` используется имя контроллера для проверки reCaptcha v3. Если его имя в вашем случае другое, то отразите нужное имя
+- в этом коде `fetch('/reCaptcha3Verify', { method: 'POST', body: data })...` используется имя контроллера **reCaptcha3Verify** для проверки reCaptcha v3. Если имя данного контроллера в вашем случае другое, то отразите нужное имя.
 - v3 подразумевает, что при каждом запросе оценки пользователя нужно ещё сообщить какая область сайта проверяется. reCaptcha настоятельно рекомендует сверять этот параметр в ответах сервера. Я использую универсальный подход `var action = '@this.ViewContext.RouteData.Values["controller"]';`
-- `reCaptchaV3PublicKey` это ваш публичный ключ reCaptcha
+- `reCaptchaV3PublicKey` это ваш публичный ключ reCaptcha. В вашем проекте вместо этой строки должен быть реальный ключ
 
+## Серверная часть немного больше.
+ 
+Для удобства работы с сессиями потребуется расширение его функционала:
 ```c#
 public static class SessionExtensions
 {
@@ -72,6 +75,64 @@ public static class SessionExtensions
 	}
 }
 ```
+
+В общем и целом серверную часть можно описать так:
+
+- Контроллер получает и обработывает токены от клиента
+- Вместе с токеном в запросе от web клиента мы получаем в том числе имя действия
+- В случае удачной проверки токена во временном кеше сохраняется результат этой проверки. По умолчанию результат сохраняется на 2 минуты в MemoryCache. Срок хранения можно изменить через `reCaptcha3VerifyController.CacheSuccessVerifyResultLifetimeMinutes`
+- В любом методе контроллера можно попытаться получить значение проверки токена.
+
+Пример использования:
+```c#
+public ActionResult Login()
+{
+	string client_id = HttpContext.Session.Get<string>("ClientId");
+	if (!string.IsNullOrWhiteSpace(client_id))
+	{
+		byte[] reCaptchaBody;
+		if (cache.TryGetValue(client_id, out reCaptchaBody))
+		{
+			if (reCaptchaBody is null || reCaptchaBody.Length == 0)
+			{
+				// можно десереализовать и ознакомиться с оценкой текущего пользователя
+			}
+			// исключаем повторное использование одноразового/временного токена
+            cache.Remove(client_id);
+		}
+	}
+	return View();
+}
+```
+
+
+В реализации используются MemoryCache
+```c#
+services.AddDistributedMemoryCache();
+services.AddMemoryCache();
+```
+
+В реализации используются сессии
+```c#
+services.AddSession(options =>
+{
+	options.Cookie.Name = ".MyApp.Session";
+	options.IdleTimeout = TimeSpan.FromMinutes(60);
+});
+```
+
+Кроме того тут же можно ознакомится с примером реализации IActionFilter reCaptcha3StateFilter. Применение этого этого фильтра сам ведёт контроль жизненного цикла токенов.
+Доступ к объекту оценки токена упрощён до `reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);`
+```c#
+[ServiceFilter(typeof(reCaptcha3StateFilter))]
+public IActionResult Register()
+{
+	reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
+	return View();
+}
+```
+Объект оценки токена будет автоматически удалён из кеша после отработки метода.
+
 
 ## v2 Checkbox widget
 Эта версия предполагает, что вы явно вставите тег **DIV** внутри формы в нужном месте. Благодаря такой вставки к нашей форме при отправке будет добавлено дополнительное поле с именем g-recaptcha-response.
