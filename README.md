@@ -215,7 +215,7 @@ services.AddMvc(opts =>
 
 Наш привязчик свяжет поле web формы g-recaptcha-response с вашей моделью.
 
-Пример подходящей модели:
+Пример подходящей модели формы:
 ```c#
 public class LoginModel
 {
