@@ -250,7 +250,7 @@ public async Task<IActionResult> Login(LoginModel model)
   {
     if (options.Value.IsEnableReCaptchaV3())
     {
-      // токены v3 хранятся во временном кеше. Если в кеше найдётся неиспользуемый токен, то мы его получим и погасим
+      // токены v3 хранятся во временном кеше. Если в кеше найдётся неиспользуемый токен, то мы его получим и "погасим"
       reCaptcha3ResponseModel reCaptcha3Status = HttpContext.Session.Get<reCaptcha3ResponseModel>(typeof(reCaptcha3StateFilter).Name);
     }
     
@@ -258,8 +258,6 @@ public async Task<IActionResult> Login(LoginModel model)
     {
       // токены v2 проверяются сразу во время запроса и ни где не хранятся
       reCaptcha2ResponseModel reCaptcha2Status = reCaptchaVerifier.reCaptcha2SiteVerify(options.Value.reCaptchaV2PrivatKey, model.g_recaptcha_response, HttpContext.Connection.RemoteIpAddress.ToString());
-
-      
     }
   }
   return View(model);
