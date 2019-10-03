@@ -49,18 +49,33 @@ reCaptcha // c# asp.net core 2.2
   });
 </script>
 ```
-Напоминаю: версия V3 не будет выводить капчи. Эта версия только оценивает посетителя.
+Напоминаю: версия V3 не будет выводить капчи. Эта версия только оценивает посетителя и делится этой оценкой с вами.
 
 Разберём этот код:
 
 - всё что внутри `grecaptcha.execute('reCaptchaV3PublicKey', {action: action}).then(function(token){...});` лучше разместить в отдельной функции в стороннем .js файле
-- в этом коде `fetch('/reCaptcha3Verify', { method: 'POST', body: data })...` используется имя контроллера **reCaptcha3Verify**, который будет вызван для проверки пользователя в системе reCaptcha v3. Если имя данного контроллера в вашем случае другое, то отразите нужное имя.
+- в этом коде `fetch('/reCaptcha3Verify', { method: 'POST', body: data })...` используется имя контроллера **reCaptcha3Verify** (присутствует в проекте), который будет вызван для проверки пользователя в системе reCaptcha v3. Если имя данного контроллера в вашем случае другое, то отразите нужное имя.
 - v3 подразумевает, что при каждом запросе оценки пользователя нужно ещё сообщить какая область сайта проверяется. reCaptcha настоятельно рекомендует сверять этот параметр в ответах сервера. Я использую универсальный подход `var action = '@this.ViewContext.RouteData.Values["controller"]';`
 - `reCaptchaV3PublicKey` это ваш публичный API ключ reCaptcha. В вашем проекте вместо этой строки должен быть реальный ключ
 
 ## Серверная часть немного больше.
- 
-Для удобства работы с сессиями потребуется расширение его функционала:
+
+нам потребуется MemoryCache
+```c#
+services.AddDistributedMemoryCache();
+services.AddMemoryCache();
+```
+
+используются сессии
+```c#
+services.AddSession(options =>
+{
+  options.Cookie.Name = ".MyApp.Session";
+  options.IdleTimeout = TimeSpan.FromMinutes(60);
+});
+```
+
++ потребуется расширение функционала сессий:
 ```c#
 public static class SessionExtensions
 {
@@ -77,22 +92,7 @@ public static class SessionExtensions
 }
 ```
 
-нам потребуется MemoryCache
-```c#
-services.AddDistributedMemoryCache();
-services.AddMemoryCache();
-```
-
-к тому же используются сессии
-```c#
-services.AddSession(options =>
-{
-  options.Cookie.Name = ".MyApp.Session";
-  options.IdleTimeout = TimeSpan.FromMinutes(60);
-});
-```
-
-Ещё потребуется унаследовать и реализовать абстрактный контроллер `reCaptcha3VerifyController`. Для того что бы обеспечить назначение приватного ключа.
+Для интеграции в контекст вашего приложения потребуется унаследовать и реализовать абстрактный контроллер `reCaptcha3VerifyController`. Для того что бы обеспечить назначение приватного ключа (например из файла канфигурации).
 Пример простейшей реализации:
 ```c#
 public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
@@ -104,13 +104,21 @@ public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
   }
 }
 ```
+Или даже так:
+```c#
+public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
+{
+  public override string reCaptchaV3PrivatKey { get; } = "ваш_приватный_api_ключ_рекапчи";
+}
+```
+
 Этого уже достаточно. reCaptcha v3 на этом этапе полностью функционирует.
 Теперь посещения страниц с подключёнными скриптами будет оцениваться сервером ReCaptcha по своей шкале.
-Можно пытаться читать эту оценку из кеша либо применить фильтр дейтсвий, который сам извлечёт для нас результат проверки токена.
+Можно пытаться читать эту оценку напрямую из кеша либо применить фильтр дейтсвий, который сам извлечёт для нас результат проверки токена и проконтролирует жизненный цикл данных оценки.
 
 Если вы хотите прочитать результат оценки из кеша напрямую вым требуется получить имя хранимых данных.
 Что бы получить имя хранимой оценки нам нужно получить стабильный идентификатор сессии.
-В данном случае этот идентификатор хранится в дополнительном параметре сессии **"ClientId"**.
+В данном случае этот идентификатор хранится в дополнительном параметре сессии **"ClientId"**. Удостоверьтесь, что бы это имя не вступало в коллизию с другими именами.
 Что бы понять как формируется и хранится этот идентификатор можно заглянуть в код контроллера **reCaptcha3VerifyController**:
 
 https://github.com/badhitman/reCaptcha/blob/master/Controllers/reCaptcha3VerifyController.cs#L63
@@ -146,7 +154,7 @@ public ActionResult Login()
 }
 ```
 Гораздо удобнее применить IActionFilter reCaptcha3StateFilter к методу и легко извлекать значение без необходимости контроля жизненного цикла данных.
-Упрощённый доступ к оценке:
++ Упрощённый доступ к объекту оценки:
 ```c#
 [ServiceFilter(typeof(reCaptcha3StateFilter))]
 public IActionResult Register()
