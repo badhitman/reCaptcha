@@ -154,7 +154,7 @@ public ActionResult Login()
 }
 ```
 Гораздо удобнее применить IActionFilter reCaptcha3StateFilter к методу и легко извлекать значение без необходимости контроля жизненного цикла данных.
-+ Упрощённый доступ к объекту оценки:
+**&&** Упрощённый доступ к объекту оценки:
 ```c#
 [ServiceFilter(typeof(reCaptcha3StateFilter))]
 public IActionResult Register()
