@@ -75,7 +75,7 @@ services.AddSession(options =>
 });
 ```
 
-+ потребуется расширение функционала сессий:
+**&&** потребуется расширение функционала сессий:
 ```c#
 public static class SessionExtensions
 {
