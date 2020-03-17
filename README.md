@@ -98,7 +98,7 @@ public static class SessionExtensions
 public class ReCaptcha3VerifyController : reCaptcha.reCaptcha3VerifyController
 {
   public override string reCaptchaV3PrivatKey { get; }
-  blic ReCaptcha3VerifyController(IOptions<AppConfig> _options)
+  public ReCaptcha3VerifyController(IOptions<AppConfig> _options)
   {
     reCaptchaV3PrivatKey = _options.Value.reCaptchaV3PrivatKey;
   }
