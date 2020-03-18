@@ -8,14 +8,33 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace reCaptcha.stat
 {
     public static class reCaptchaVerifier
     {
-        public static reCaptcha3ResponseModel reCaptcha3SiteVerify(string secret, string response, string remoteip = null) => DeserializeFromStream(new MemoryStream(reCaptchaSiteVerify(secret, response, remoteip)), typeof(reCaptcha3ResponseModel)) as reCaptcha3ResponseModel;
+        public static reCaptcha3ResponseModel reCaptcha3SiteVerify(string secret, string response, string remoteip = null)
+        {
+            byte[] respBytes = reCaptchaSiteVerify(secret, response, remoteip);
+            return DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha3ResponseModel)) as reCaptcha3ResponseModel;
+        }
+        public async static Task<reCaptcha3ResponseModel> reCaptcha3SiteVerifyAsync(string secret, string response, string remoteip = null)
+        {
+            byte[] respBytes = await RunSave(() => reCaptchaSiteVerify(secret, response, remoteip), Array.Empty<byte>());
+            return await RunSave(() => DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha3ResponseModel)) as reCaptcha3ResponseModel, null);
+        }
 
-        public static reCaptcha2ResponseModel reCaptcha2SiteVerify(string secret, string response, string remoteip = null) => DeserializeFromStream(new MemoryStream(reCaptchaSiteVerify(secret, response, remoteip)), typeof(reCaptcha2ResponseModel)) as reCaptcha2ResponseModel;
+        public static reCaptcha2ResponseModel reCaptcha2SiteVerify(string secret, string response, string remoteip = null)
+        {
+            byte[] respBytes = reCaptchaSiteVerify(secret, response, remoteip);
+            return DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha2ResponseModel)) as reCaptcha2ResponseModel;
+        }
+        public async static Task<reCaptcha2ResponseModel> reCaptcha2SiteVerifyAsync(string secret, string response, string remoteip = null)
+        {
+            byte[] respBytes = await RunSave(() => reCaptchaSiteVerify(secret, response, remoteip), Array.Empty<byte>());
+            return await RunSave(() => DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha2ResponseModel)) as reCaptcha2ResponseModel, null);
+        }
 
         /// <summary>
         /// Проверка токена
@@ -65,5 +84,37 @@ namespace reCaptcha.stat
             }
         }
 
+        private static Task RunSave(Action action)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    action?.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    //_logger.Error("Ошибка " + GetType().Name + ex.Message);
+                }
+            });
+        }
+
+        private static Task<T> RunSave<T>(Func<T> func, T def)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    var res = func.Invoke();
+                    return res;
+                }
+                catch (Exception ex)
+                {
+                    //_logger.Error("Ошибка " + GetType().Name + ex.Message);
+                }
+
+                return def;
+            });
+        }
     }
 }
