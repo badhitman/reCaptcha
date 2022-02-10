@@ -48,8 +48,8 @@ namespace reCaptcha.stat
                 {
                     NameValueCollection values = new NameValueCollection()
                     {
-                       { "secret", secret }, // Требуемый. Общий ключ между вашим сайтом и reCAPTCHA
-                       { "response", response } // Требуемый. Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте
+                       { "secret", secret }, // Обязательный. Приватный ключ reCAPTCHA
+                       { "response", response } // Обязательный. Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте
                     };
                     if (!string.IsNullOrWhiteSpace(remoteip))
                         values.Add(new NameValueCollection() { { "remoteip", remoteip } });// Необязательный. IP-адрес пользователя
@@ -84,20 +84,20 @@ namespace reCaptcha.stat
             }
         }
 
-        private static Task RunSave(Action action)
-        {
-            return Task.Run(() =>
-            {
-                try
-                {
-                    action?.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    //_logger.Error("Ошибка " + GetType().Name + ex.Message);
-                }
-            });
-        }
+        //private static Task RunSave(Action action)
+        //{
+        //    return Task.Run(() =>
+        //    {
+        //        try
+        //        {
+        //            action?.Invoke();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            //_logger.Error("Ошибка " + GetType().Name + ex.Message);
+        //        }
+        //    });
+        //}
 
         private static Task<T> RunSave<T>(Func<T> func, T def)
         {
