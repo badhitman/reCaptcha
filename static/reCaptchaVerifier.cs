@@ -44,18 +44,16 @@ namespace reCaptcha.stat
             byte[] resp_bytes;
             try
             {
-                using (WebClient client = new WebClient() { Encoding = Encoding.UTF8 })
-                {
-                    NameValueCollection values = new NameValueCollection()
+                using WebClient client = new WebClient() { Encoding = Encoding.UTF8 };
+                NameValueCollection values = new NameValueCollection()
                     {
                        { "secret", secret }, // Обязательный. Приватный ключ reCAPTCHA
                        { "response", response } // Обязательный. Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте
                     };
-                    if (!string.IsNullOrWhiteSpace(remoteip))
-                        values.Add(new NameValueCollection() { { "remoteip", remoteip } });// Необязательный. IP-адрес пользователя
+                if (!string.IsNullOrWhiteSpace(remoteip))
+                    values.Add(new NameValueCollection() { { "remoteip", remoteip } });// Необязательный. IP-адрес пользователя
 
-                    resp_bytes = client.UploadValues("https://www.google.com/recaptcha/api/siteverify", values);
-                }
+                resp_bytes = client.UploadValues("https://www.google.com/recaptcha/api/siteverify", values);
             }
             catch
             {
@@ -72,11 +70,9 @@ namespace reCaptcha.stat
             JsonSerializer serializer = new JsonSerializer();
             try
             {
-                using (StreamReader sr = new StreamReader(stream))
-                using (JsonTextReader jsonTextReader = new JsonTextReader(sr))
-                {
-                    return serializer.Deserialize(jsonTextReader, type);
-                }
+                using StreamReader sr = new StreamReader(stream);
+                using JsonTextReader jsonTextReader = new JsonTextReader(sr);
+                return serializer.Deserialize(jsonTextReader, type);
             }
             catch
             {
