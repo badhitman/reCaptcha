@@ -2,13 +2,15 @@
 // © https://github.com/badhitman - @fakegov 
 ////////////////////////////////////////////////
 
-namespace reCaptcha.Models.VerifyingUsersResponse
+namespace reCaptcha;
+
+/// <summary>
+/// For reCAPTCHA Android
+/// </summary>
+public class ReCaptchaAndroidResponseModel : AbstractReCaptchaResponseModel
 {
     /// <summary>
-    /// For reCAPTCHA Android
+    /// Имя пакета приложения, в котором была решена reCAPTCHA
     /// </summary>
-    public class reCaptchaAndroidResponseModel : abstract_reCaptchaResponseModel
-    {
-        public string apk_package_name { get; set; } // the package name of the app where the reCAPTCHA was solved
-    }
+    public string? apk_package_name { get; set; } // the package name of the app where the reCAPTCHA was solved
 }

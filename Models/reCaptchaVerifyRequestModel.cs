@@ -3,13 +3,16 @@
 ////////////////////////////////////////////////
 using System.ComponentModel.DataAnnotations;
 
-namespace reCaptcha.Models
+namespace reCaptcha;
+
+/// <inheritdoc/>
+public class ReCaptchaVerifyRequestModel
 {
-    public class reCaptchaVerifyRequestModel
-    {
-        [Required]
-        public string Action { get; set; }
-        [Required]
-        public string Token { get; set; }
-    }
+    /// <inheritdoc/>
+    [Required]
+    public required string Action { get; set; }
+
+    /// <inheritdoc/>
+    [Required]
+    public required string Token { get; set; }
 }

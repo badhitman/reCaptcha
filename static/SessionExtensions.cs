@@ -4,21 +4,24 @@
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-namespace reCaptcha.stat
+namespace reCaptcha;
+
+/// <inheritdoc/>
+public static class SessionExtensions
 {
-    public static class SessionExtensions
+    /// <inheritdoc/>
+    public static void Set<T>(this ISession session, string key, T value)
     {
-        public static void Set<T>(this ISession session, string key, T value)
-        {
-            session.SetString(key, JsonConvert.SerializeObject(value));
-        }
+        session.SetString(key, JsonConvert.SerializeObject(value));
+    }
 
-        public static T Get<T>(this ISession session, string key)
-        {
-            var value = session.GetString(key);
+    /// <inheritdoc/>
+    public static T? Get<T>(this ISession session, string key)
+    {
+        string? value = session.GetString(key);
 
-            return value == null ? default(T) :
-                JsonConvert.DeserializeObject<T>(value);
-        }
+        return value is null
+            ? default
+            : JsonConvert.DeserializeObject<T>(value);
     }
 }

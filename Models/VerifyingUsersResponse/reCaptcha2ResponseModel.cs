@@ -1,21 +1,28 @@
 ﻿////////////////////////////////////////////////
 // © https://github.com/badhitman - @fakegov 
 ////////////////////////////////////////////////
-using System;
 
-namespace reCaptcha.Models.VerifyingUsersResponse
+using Newtonsoft.Json;
+
+namespace reCaptcha;
+
+/// <summary>
+/// Ответ/результат проверки reCaptcha
+/// </summary>
+public class ReCaptcha2ResponseModel : AbstractReCaptchaResponseModel
 {
-    public class reCaptcha2ResponseModel : abstract_reCaptchaResponseModel
-    {
-        /// <summary>
-        /// имя хоста сайта, на котором была решена рекапча
-        /// </summary>
-        public string hostname { get; set; }
+    /// <summary>
+    /// имя хоста сайта, на котором была решена reCAPTCHA
+    /// </summary>
+    [JsonProperty("hostname")]
+    public string? Hostname { get; set; }
 
-        public override string ToString()
-        {
-            return base.ToString() + Environment.NewLine + 
-                "Hostname:" + hostname;
-        }
+    /// <summary>
+    /// Конвертировать в строковое представление
+    /// </summary>
+    /// <returns>Строковое представление</returns>
+    public override string ToString()
+    {
+        return base.ToString() + Environment.NewLine + "Hostname:" + Hostname;
     }
 }

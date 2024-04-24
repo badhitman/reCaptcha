@@ -1,116 +1,140 @@
 ﻿////////////////////////////////////////////////
 // © https://github.com/badhitman - @fakegov 
 ////////////////////////////////////////////////
+
 using Newtonsoft.Json;
-using reCaptcha.Models.VerifyingUsersResponse;
-using System;
-using System.Collections.Specialized;
-using System.IO;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace reCaptcha.stat
+namespace reCaptcha;
+
+/// <summary>
+/// reCaptcha проверка
+/// </summary>
+public static class ReCaptchaVerifier
 {
-    public static class reCaptchaVerifier
+    /// <summary>
+    /// Проверка reCaptcha
+    /// </summary>
+    /// <param name="secret">Общий ключ между вашим сайтом и reCAPTCHA</param>
+    /// <param name="response">Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте</param>
+    /// <param name="remoteip">IP адрес удалённого клиента (который проходит проверку)</param>
+    /// <returns>Ответ/результат проверки reCaptcha</returns>
+    public static ReCaptcha3ResponseModel? ReCaptcha3SiteVerify(string secret, string response, string? remoteip = null)
     {
-        public static reCaptcha3ResponseModel reCaptcha3SiteVerify(string secret, string response, string remoteip = null)
-        {
-            byte[] respBytes = reCaptchaSiteVerify(secret, response, remoteip);
-            return DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha3ResponseModel)) as reCaptcha3ResponseModel;
-        }
-        public async static Task<reCaptcha3ResponseModel> reCaptcha3SiteVerifyAsync(string secret, string response, string remoteip = null)
-        {
-            byte[] respBytes = await RunSave(() => reCaptchaSiteVerify(secret, response, remoteip), Array.Empty<byte>());
-            return await RunSave(() => DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha3ResponseModel)) as reCaptcha3ResponseModel, null);
-        }
+        byte[] respBytes = ReCaptchaSiteVerify(secret, response, remoteip).Result;
+        return DeserializeFromStream(new MemoryStream(respBytes), typeof(ReCaptcha3ResponseModel)) as ReCaptcha3ResponseModel;
+    }
 
-        public static reCaptcha2ResponseModel reCaptcha2SiteVerify(string secret, string response, string remoteip = null)
-        {
-            byte[] respBytes = reCaptchaSiteVerify(secret, response, remoteip);
-            return DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha2ResponseModel)) as reCaptcha2ResponseModel;
-        }
-        public async static Task<reCaptcha2ResponseModel> reCaptcha2SiteVerifyAsync(string secret, string response, string remoteip = null)
-        {
-            byte[] respBytes = await RunSave(() => reCaptchaSiteVerify(secret, response, remoteip), Array.Empty<byte>());
-            return await RunSave(() => DeserializeFromStream(new MemoryStream(respBytes), typeof(reCaptcha2ResponseModel)) as reCaptcha2ResponseModel, null);
-        }
+    /// <summary>
+    /// Проверка reCaptcha
+    /// </summary>
+    /// <param name="secret">Общий ключ между вашим сайтом и reCAPTCHA</param>
+    /// <param name="response">Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте</param>
+    /// <param name="remoteip">IP адрес удалённого клиента (который проходит проверку)</param>
+    /// <returns>Ответ/результат проверки reCaptcha</returns>
+    public async static Task<ReCaptcha3ResponseModel?> ReCaptcha3SiteVerifyAsync(string secret, string response, string? remoteip = null)
+    {
+        byte[] respBytes = await ReCaptchaSiteVerify(secret, response, remoteip);
+        respBytes = await RunSave(() => respBytes, []);
+        return await RunSave(() => DeserializeFromStream(new MemoryStream(respBytes), typeof(ReCaptcha3ResponseModel)) as ReCaptcha3ResponseModel, null);
+    }
 
-        /// <summary>
-        /// Проверка токена
-        /// </summary>
-        static byte[] reCaptchaSiteVerify(string secret, string response, string remoteip = null)
+    /// <summary>
+    /// Проверка reCaptcha
+    /// </summary>
+    /// <param name="secret">Общий ключ между вашим сайтом и reCAPTCHA</param>
+    /// <param name="response">Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте</param>
+    /// <param name="remoteip">IP адрес удалённого клиента (который проходит проверку)</param>
+    /// <returns>Ответ/результат проверки reCaptcha</returns>
+    public static ReCaptcha2ResponseModel? ReCaptcha2SiteVerify(string secret, string response, string? remoteip = null)
+    {
+        byte[] respBytes = ReCaptchaSiteVerify(secret, response, remoteip).Result;
+        return DeserializeFromStream(new MemoryStream(respBytes), typeof(ReCaptcha2ResponseModel)) as ReCaptcha2ResponseModel;
+    }
+
+    /// <summary>
+    /// Проверка reCaptcha
+    /// </summary>
+    /// <param name="secret">Общий ключ между вашим сайтом и reCAPTCHA</param>
+    /// <param name="response">Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте</param>
+    /// <param name="remoteip">IP адрес удалённого клиента (который проходит проверку)</param>
+    /// <returns>Ответ/результат проверки reCaptcha</returns>
+    public async static Task<ReCaptcha2ResponseModel?> ReCaptcha2SiteVerifyAsync(string secret, string response, string? remoteip = null)
+    {
+        byte[]? bytes_response = await ReCaptchaSiteVerify(secret, response, remoteip);
+        byte[] respBytes = await RunSave(() => bytes_response, []);
+        return await RunSave(() => DeserializeFromStream(new MemoryStream(respBytes), typeof(ReCaptcha2ResponseModel)) as ReCaptcha2ResponseModel, null);
+    }
+
+    /// <summary>
+    /// Проверка reCaptcha
+    /// </summary>
+    /// <param name="secret">Общий ключ между вашим сайтом и reCAPTCHA</param>
+    /// <param name="response">Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте</param>
+    /// <param name="remoteip">IP адрес удалённого клиента (который проходит проверку)</param>
+    /// <returns>Ответ/результат проверки reCaptcha</returns>
+    static async Task<byte[]> ReCaptchaSiteVerify(string secret, string response, string? remoteip = null)
+    {
+        try
         {
-            byte[] resp_bytes;
+            List<KeyValuePair<string, string>>? values = new List<KeyValuePair<string, string>>
+            {
+                new("secret", secret),
+                new("response", response)
+            };
+
+            if (!string.IsNullOrWhiteSpace(remoteip))
+                values.Add(new KeyValuePair<string, string>("remoteip", remoteip));// Необязательный. IP-адрес пользователя
+
+            FormUrlEncodedContent? content = new(values);
+
+            using HttpClient client = new() { BaseAddress = new Uri("https://www.google.com/recaptcha/api/siteverify") };
+            using HttpRequestMessage httpRequest = new(HttpMethod.Post, "https://www.google.com/recaptcha/api/siteverify")
+            {
+                Content = new FormUrlEncodedContent(values)
+            };
+
+            HttpResponseMessage? resp_msg = client.Send(httpRequest);
+            return await resp_msg.Content.ReadAsByteArrayAsync();
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    /// <summary>
+    /// Десереализовать объект из stream
+    /// </summary>
+    /// <param name="stream">Поток для десериализации</param>
+    /// <param name="type">Тип данных, в который следует десериализовать поток</param>
+    /// <returns>Объект, десериализованный из потока</returns>
+    public static object? DeserializeFromStream(Stream stream, Type type)
+    {
+        JsonSerializer serializer = new();
+        try
+        {
+            using StreamReader sr = new(stream);
+            using JsonTextReader jsonTextReader = new(sr);
+            return serializer.Deserialize(jsonTextReader, type);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Task<T> RunSave<T>(Func<T> func, T def)
+    {
+        return Task.Run(() =>
+        {
             try
             {
-                using WebClient client = new WebClient() { Encoding = Encoding.UTF8 };
-                NameValueCollection values = new NameValueCollection()
-                    {
-                       { "secret", secret }, // Обязательный. Приватный ключ reCAPTCHA
-                       { "response", response } // Обязательный. Маркер ответа пользователя, предоставляемый клиентской интеграцией reCAPTCHA на вашем сайте
-                    };
-                if (!string.IsNullOrWhiteSpace(remoteip))
-                    values.Add(new NameValueCollection() { { "remoteip", remoteip } });// Необязательный. IP-адрес пользователя
-
-                resp_bytes = client.UploadValues("https://www.google.com/recaptcha/api/siteverify", values);
+                return func.Invoke();
             }
             catch
             {
-                resp_bytes = new byte[0];
-            }
-            return resp_bytes;
-        }
-
-        /// <summary>
-        /// Десереализовать объект из stream
-        /// </summary>
-        public static object DeserializeFromStream(Stream stream, Type type)
-        {
-            JsonSerializer serializer = new JsonSerializer();
-            try
-            {
-                using StreamReader sr = new StreamReader(stream);
-                using JsonTextReader jsonTextReader = new JsonTextReader(sr);
-                return serializer.Deserialize(jsonTextReader, type);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        //private static Task RunSave(Action action)
-        //{
-        //    return Task.Run(() =>
-        //    {
-        //        try
-        //        {
-        //            action?.Invoke();
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            //_logger.Error("Ошибка " + GetType().Name + ex.Message);
-        //        }
-        //    });
-        //}
-
-        private static Task<T> RunSave<T>(Func<T> func, T def)
-        {
-            return Task.Run(() =>
-            {
-                try
-                {
-                    var res = func.Invoke();
-                    return res;
-                }
-                catch (Exception ex)
-                {
-                    //_logger.Error("Ошибка " + GetType().Name + ex.Message);
-                }
-
                 return def;
-            });
-        }
+            }
+        });
     }
 }

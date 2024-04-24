@@ -1,28 +1,23 @@
 ﻿////////////////////////////////////////////////
 // © https://github.com/badhitman - @fakegov 
 ////////////////////////////////////////////////
-using System;
-using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace reCaptcha.Infrastructure
+namespace reCaptcha;
+
+/// <inheritdoc/>
+/// <inheritdoc/>
+public class CustomReCaptcha2ResponseModelBinder(IModelBinder fallbackBinder) : IModelBinder
 {
-    public class CustomReCaptcha2ResponseModelBinder : IModelBinder
+    /// <inheritdoc/>
+    public Task BindModelAsync(ModelBindingContext? bindingContext)
     {
-        private readonly IModelBinder fallbackBinder;
-        public CustomReCaptcha2ResponseModelBinder(IModelBinder fallbackBinder)
-        {
-            this.fallbackBinder = fallbackBinder;
-        }
-        public Task BindModelAsync(ModelBindingContext bindingContext)
-        {
-            if (bindingContext == null)
-                throw new ArgumentNullException(nameof(bindingContext));
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
-            if (bindingContext.FieldName == "g-recaptcha-response")
-                bindingContext.FieldName = "g_recaptcha_response";
+        if (bindingContext.FieldName == "g-recaptcha-response")
+            bindingContext.FieldName = "g_recaptcha_response";
 
-            return fallbackBinder.BindModelAsync(bindingContext);
-        }
+        return fallbackBinder.BindModelAsync(bindingContext);
     }
 }
